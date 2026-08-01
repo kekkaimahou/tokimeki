@@ -45,7 +45,7 @@ class auto_roll(commands.Cog):
                 self.roulette = roulette
             case "/":
                 try:
-                    self.roulette = [cmd for cmd in self.bot.slash_commands if cmd.name == roulette][0]
+                    self.roulette = [cmd for cmd in self.bot.slash_commands if cmd.name == roulette.replace("/", "")][0]
                 except IndexError:
                     self.roulette = "$wa"
             case _:
