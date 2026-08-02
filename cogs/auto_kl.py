@@ -19,7 +19,7 @@ import random
 
 KL_CONFIRM = ["spend", "gastar"]
 MANY_PINS = ["too many badges", "muchas insignias"]
-NO_KAKERA = ["not enough kakera", "no tienes suficiente kakera", "te faltan"]
+NO_KAKERA = ["you need", "not enough kakera", "no tienes suficiente kakera", "te faltan"]
 GIVESCRAP_CONFIRM = ["are you sure you want to give", "realmente quieres dar"]
 ERROR_KEYWORDS = ["error"]
 delay_min = 20.0
@@ -94,7 +94,7 @@ class auto_kl(commands.Cog):
             await self.kl_channel.send(f"$givescrap {self.bot.user.mention} 5000000000")
             return
 
-        if any(word in content for word in GIVESCRAP_CONFIRM) and self.user.name.lower() in content:
+        if any(word in content for word in GIVESCRAP_CONFIRM) and self.bot.user.name.lower() in content:
             await self.kl_channel.send("y")
             return
 
