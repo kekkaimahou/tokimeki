@@ -22,11 +22,13 @@ import time
 import random
 import re
 
+# delay used for text commands
 delay_min = 2.0
 delay_max = 3.0
+# delay used for slash commands
 delay_min_slash = 3.0
 delay_max_slash = 4.2
-auto_click_buttons = r"(?:kakera(?:P)|sp.)2?"
+auto_click_buttons = r"(?:kakera(?:P)|sp.)2?" # regex pattern for the buttons to be clicked
 
 class auto_roll(commands.Cog):
     def __init__(self, bot):
@@ -87,7 +89,7 @@ class auto_roll(commands.Cog):
                         self.next_roll = now + random.uniform(delay_min_slash, delay_max_slash)
                     else:
                         return
-                except asyncio.exceptions.CancelledError as exc:
+                except asyncio.exceptions.CancelledError as exc: # I think removing this part might make it less prone to crashes but also more annoying to shut down the bot
                     raise exc
                 except Exception as exc:
                     pass

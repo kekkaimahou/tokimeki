@@ -91,7 +91,7 @@ class auto_kl(commands.Cog):
             return
 
         if any(word in content for word in NO_KAKERA):
-            await self.kl_channel.send(f"$givescrap {self.user.mention} 5000000000")
+            await self.kl_channel.send(f"$givescrap {self.bot.user.mention} 5000000000")
             return
 
         if any(word in content for word in GIVESCRAP_CONFIRM) and self.user.name.lower() in content:
