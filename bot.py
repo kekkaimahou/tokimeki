@@ -23,10 +23,11 @@ discord.utils.setup_logging()
 class MyBot(commands.Bot):
     def __init__(self):
         super().__init__(
-            command_prefix="!!!", 
+            command_prefix="!!!",
             help_command=None, # personally I don't use the help command but you can comment this out if you want
             self_bot=True, # (other users can't use your commands)
-            afk=True # this is so notifications actually work properly when the bot is running
+            afk=True, # this is so notifications actually work properly when the bot is running
+            chunk_guilds_at_startup=False, # don't need member info
         )
         self.mudae_id = 432610292342587392 # mudae bot ID
         self.app_commands_channel_id = 1138234663668822076 # channel that has mudae commands (for using slash commands)
