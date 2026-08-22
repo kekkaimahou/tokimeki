@@ -16,6 +16,7 @@ from pathlib import Path
 from omegaconf import OmegaConf
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 parser = argparse.ArgumentParser(description="Run the discord bot.")
 
@@ -40,17 +41,20 @@ discord.utils.setup_logging()
 class MyBot(commands.Bot):
     def __init__(self):
         super().__init__(
-            command_prefix="!!!",
+            command_prefix=commands.when_mentioned,
             help_command=None, # personally I don't use the help command but you can comment this out if you want
             self_bot=True, # (other users can't use your commands)
             afk=True, # this is so notifications actually work properly when the bot is running
             chunk_guilds_at_startup=False, # don't need member info
         )
-        self.app_commands_channel_id = 1138234663668822076 # channel that has mudae commands (for using slash commands)
+        #self.app_commands_channel_id = 1138234663668822076 # channel that has mudae commands (for using slash commands)
         self.slash_commands: list[discord.SlashCommand] = []
         self.config = config
     
-    async def update_cmds(channel: discord.TextChannel):
+    async def on_command(self, ctx):
+        logger.debug(f"{ctx.author.name} used ({ctx.command.name}")
+    
+    async def update_cmds(self, channel: discord.TextChannel):
         apps = await ctx.channel.application_commands()
         self.slash_commands = [cmd for cmd in apps if isinstance(cmd, discord.SlashCommand)]
 
@@ -66,9 +70,10 @@ class MyBot(commands.Bot):
     async def on_ready(self):
         logger.info(f"""Logged in successfully! User: {self.user.name}""")
         
-        app_commands_channel = self.get_channel(self.app_commands_channel_id)
-        apps = await app_commands_channel.application_commands()
-        self.slash_commands = [cmd for cmd in apps if isinstance(cmd, discord.SlashCommand)]
+        if self.app_commands_channel_id:
+            app_commands_channel = self.get_channel(self.app_commands_channel_id)
+            apps = await app_commands_channel.application_commands()
+            self.slash_commands = [cmd for cmd in apps if isinstance(cmd, discord.SlashCommand)]
 
 
 async def main():

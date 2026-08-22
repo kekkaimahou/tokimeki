@@ -40,18 +40,18 @@ class AutoRoll(commands.Cog):
             current_roulette = roulette
         else:
             current_roulette = self.bot.config.auto_roll.default_roulette
-        match roulette[0]:
+        match current_roulette[0]:
             case "$":
-                self.roulette = roulette
+                self.roulette = current_roulette
             case "/":
                 try:
                     if not self.bot.slash_commands:
                         await self.bot.update_cmds(ctx.channel)
-                    self.roulette = [cmd for cmd in self.bot.slash_commands if cmd.name == roulette.replace("/", "")][0]
+                    self.roulette = [cmd for cmd in self.bot.slash_commands if cmd.name == current_roulette.replace("/", "")][0]
                 except IndexError:
                     self.roulette = "$wa"
             case _:
-                self.roulette = "$" + roulette
+                self.roulette = "$" + current_roulette
         
         self._start_roll(ctx.channel)
 
