@@ -20,7 +20,7 @@ import random
 class AutoKL(commands.Cog):
     def __init__(self, bot):
         self.is_kl: bool = False
-        self.kl_channel: discord.Message.channel | None = None
+        self.kl_channel: discord.TextChannel | None = None
         self.next_kl: float = time.monotonic()
         self.kl_task: asyncio.Task | None = None
         self.bot = bot
@@ -60,7 +60,23 @@ class AutoKL(commands.Cog):
             await asyncio.sleep(1)
 
     @commands.Cog.listener()
-    async def on_message(self, message: discord.Message) -> None:
+    async def on_ready(self):
+        if (
+            self.bot.config.auto_kl.auto_start.enabled
+            and self.bot.config.auto_kl.auto_start.channel_id
+            and (not self.kl_task or not self.kl_task.done())
+        ):
+            self._start_kl(self.bot.get_channel(self.bot.config.auto_kl.auto_start.channel_id))
+        elif (
+            self.bot.config.auto_kl.persistent
+            and self.is_kl
+            and self.kl_channel
+            and self.kl_task.done()
+        ):
+            self._start_kl(self.kl_channel)
+
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message):
         if (not self.is_kl) or (self.kl_channel.id != message.channel.id) or (self.bot.config.mudae_id != message.author.id): return
 
         content = message.content.lower()
@@ -89,7 +105,7 @@ class AutoKL(commands.Cog):
             return
 
     @commands.Cog.listener()
-    async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User) -> None:
+    async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
         if (not self.is_kl) or (reaction.message.channel.id != self.kl_channel.id): return
 
         if user.id == self.bot.mudae_id and str(reaction.emoji) == "🛑":

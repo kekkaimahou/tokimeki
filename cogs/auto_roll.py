@@ -40,24 +40,27 @@ class AutoRoll(commands.Cog):
             current_roulette = roulette
         else:
             current_roulette = self.bot.config.auto_roll.default_roulette
-        match current_roulette[0]:
-            case "$":
-                self.roulette = current_roulette
-            case "/":
-                try:
-                    if not self.bot.slash_commands:
-                        await self.bot.update_cmds(ctx.channel)
-                    self.roulette = [cmd for cmd in self.bot.slash_commands if cmd.name == current_roulette.replace("/", "")][0]
-                except IndexError:
-                    self.roulette = "$wa"
-            case _:
-                self.roulette = "$" + current_roulette
+        await self._update_roulette(current_roulette, ctx.channel)
         
         self._start_roll(ctx.channel)
 
     @commands.command()
     async def stop_roll(self, ctx: commands.Context) -> None:
         self._stop_roll()
+
+    async def _update_roulette(self, roulette: str, channel: discord.TextChannel):
+        match roulette[0]:
+            case "$":
+                self.roulette = roulette
+            case "/":
+                try:
+                    if not self.bot.slash_commands:
+                        await self.bot.update_cmds(ctx.channel)
+                    self.roulette = [cmd for cmd in self.bot.slash_commands if cmd.name == roulette.replace("/", "")][0]
+                except IndexError:
+                    self.roulette = "$wa"
+            case _:
+                self.roulette = "$" + roulette
 
     def _start_roll(self, channel: discord.TextChannel) -> None:
         if self.roll_task or self.is_roll:
@@ -94,6 +97,24 @@ class AutoRoll(commands.Cog):
                 except Exception as exc:
                     pass
             await asyncio.sleep(0.5)
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        if (
+            self.bot.config.auto_roll.auto_start.enabled
+            and self.bot.config.auto_roll.auto_start.channel_id
+            and (not self.roll_task or not self.roll_task.done())
+        ):
+            channel = self.bot.get_channel(self.bot.config.auto_roll.auto_start.channel_id)
+            await self._update_roulette(self.bot.config.auto_roll.default_roulette, channel)
+            self._start_roll(channel)
+        elif (
+            self.bot.config.auto_roll.persistent
+            and self.is_roll
+            and self.roll_channel
+            and self.roll_task.done()
+        ):
+            self._start_roll(self.roll_channel)
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:

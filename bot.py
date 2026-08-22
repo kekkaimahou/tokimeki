@@ -55,7 +55,7 @@ class MyBot(commands.Bot):
         logger.debug(f"{ctx.author.name} used ({ctx.command.name}")
     
     async def update_cmds(self, channel: discord.TextChannel):
-        apps = await ctx.channel.application_commands()
+        apps = await channel.application_commands()
         self.slash_commands = [cmd for cmd in apps if isinstance(cmd, discord.SlashCommand)]
 
     async def setup_hook(self):
