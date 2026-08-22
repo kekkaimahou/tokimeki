@@ -61,7 +61,7 @@ class AutoKL(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
-        if (not self.is_kl) or (self.kl_channel.id != message.channel.id) or (self.bot.mudae_id != message.author.id): return
+        if (not self.is_kl) or (self.kl_channel.id != message.channel.id) or (self.bot.config.mudae_id != message.author.id): return
 
         content = message.content.lower()
 

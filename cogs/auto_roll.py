@@ -97,7 +97,7 @@ class AutoRoll(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
-        if (not self.is_roll) or (self.roll_channel.id != message.channel.id) or (self.bot.mudae_id != message.author.id): return
+        if (not self.is_roll) or (self.roll_channel.id != message.channel.id) or (self.bot.config.mudae_id != message.author.id): return
         click_queue = self._check_message_components(message, self.bot.config.auto_roll.auto_click_buttons)
         if click_queue:
             for button in click_queue:

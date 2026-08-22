@@ -46,9 +46,8 @@ class MyBot(commands.Bot):
             afk=True, # this is so notifications actually work properly when the bot is running
             chunk_guilds_at_startup=False, # don't need member info
         )
-        self.mudae_id = 432610292342587392 # mudae bot ID
         self.app_commands_channel_id = 1138234663668822076 # channel that has mudae commands (for using slash commands)
-        self.slash_commands = []
+        self.slash_commands: list[discord.SlashCommand] = []
         self.config = config
     
     async def update_cmds(channel: discord.TextChannel):

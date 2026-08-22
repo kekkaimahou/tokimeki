@@ -1,6 +1,9 @@
 # discord token (reads from environment variable TOKEN if unavailable)
 token="" 
 
+# mudae bot id (this usually will not need any changes)
+mudae_id = 432610292342587392
+
 [auto_roll]
 # cogs/auto_roll.py
 
