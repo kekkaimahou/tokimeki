@@ -31,7 +31,53 @@ cogs = ["cogs." + x.stem for x in current_dir.glob("cogs/*.py") if x.is_file() a
 config_file = args.config or current_dir / "config.toml"
 with config_file.open("rb") as f:
     config_data = tomllib.load(f)
-default_config = OmegaConf.create()
+default_config = OmegaConf.create(
+    {
+        "token": "",
+        "mudae_id": 432610292342587392,
+        "app_commands_channel_id": 0,
+        "auto_roll": {
+            "persistent": True,
+            "default_roulette": "$wa",
+            "delay_min": 2.0,
+            "delay_max": 3.0,
+            "delay_min_slash": 3.0,
+            "delay_max_slash": 4.2,
+            "auto_click_buttons": "(?:kakera(?:P)|sp.)2?",
+            "auto_start": {
+                "enabled": False,
+                "channel_id": 0
+            }
+        },
+        "auto_kl": {
+            "persistent": True,
+            "kl_confirm": [
+                "spend",
+                "gastar"
+            ],
+            "many_pins": [
+                "too many badges",
+                "muchas insignias"
+            ],
+            "no_kakera": [
+                "you need",
+                "not enough kakera",
+                "no tienes suficiente kakera",
+                "te faltan"
+            ],
+            "givescrap_confirm": [
+                "are you sure you want to give",
+                "realmente quieres dar"
+            ],
+            "delay_min": 20.0,
+            "delay_max": 22.0,
+            "auto_start": {
+                "enabled": False,
+                "channel_id": 0
+            }
+        }
+    }
+)
 
 user_config = OmegaConf.create(config_data)
 config = OmegaConf.merge(default_config, user_config) # user config < default config
