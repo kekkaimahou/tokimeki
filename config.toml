@@ -1,0 +1,67 @@
+# Configuration file
+#
+# If this is missing, default configs (the ones you see here) will be used.
+# Same case for if a key or table is missing.
+
+# discord token (reads from command line arguments or environment variable TOKEN if unavailable)
+token = "" 
+
+# mudae bot id (this usually will not need any changes)
+mudae_id = 432610292342587392
+
+# app commands channel id (to automatically fetch slash commands)
+# not needed for slash command use, it just makes it faster the first time
+app_commands_channel_id = 0
+
+[auto_roll]
+# cogs/auto_roll.py
+
+# will the bot attempt to restart the task when it's terminated (connection is lost)?
+persistent=true
+
+# what default roulette to use
+# slash commands will be considered for this option
+default_roulette="$wa"
+
+# delay (in seconds) used for text commands
+delay_min = 2.0
+delay_max = 3.0
+
+# delay (in seconds) used for slash commands
+delay_min_slash = 3.0
+delay_max_slash = 4.2
+
+# buttons to auto-click using regex
+auto_click_buttons = '(?:kakera(?:P)|sp.)2?'
+
+[auto_roll.auto_start]
+# note: will override persistence
+
+# will auto-start for auto roll be enabled?
+enabled = false
+# which channel to start auto roll in?
+channel_id = 0
+
+[auto_kl]
+# cogs/auto_kl.py
+
+# will the bot attempt to restart the task when it's terminated (connection is lost)?
+persistent = true
+
+# keywords used for kl auto-detection
+kl_confirm = ["spend", "gastar"]
+many_pins = ["too many badges", "muchas insignias"]
+no_kakera = ["you need", "not enough kakera", "no tienes suficiente kakera", "te faltan"]
+givescrap_confirm = ["are you sure you want to give", "realmente quieres dar"]
+
+# delay (in seconds) between each usage of the command
+delay_min = 20.0
+delay_max = 22.0
+
+[auto_kl.auto_start]
+# note: will override persistence
+
+# will auto-start for auto roll be enabled?
+enabled = false
+# which channel to start auto roll in?
+channel_id = 0

@@ -17,52 +17,42 @@ import asyncio
 import time
 import random
 
-KL_CONFIRM = ["spend", "gastar"]
-MANY_PINS = ["too many badges", "muchas insignias"]
-NO_KAKERA = ["you need", "not enough kakera", "no tienes suficiente kakera", "te faltan"]
-GIVESCRAP_CONFIRM = ["are you sure you want to give", "realmente quieres dar"]
-ERROR_KEYWORDS = ["error"]
-delay_min = 20.0
-delay_max = 22.0
-
-class auto_kl(commands.Cog):
+class AutoKL(commands.Cog):
     def __init__(self, bot):
         self.is_kl: bool = False
-        self.kl_channel: discord.Message.channel | None = None
+        self.kl_channel: discord.TextChannel | None = None
         self.next_kl: float = time.monotonic()
         self.kl_task: asyncio.Task | None = None
         self.bot = bot
 
     @commands.command()
-    async def start_kl(self, ctx):
-        await ctx.message.delete()
+    async def start_kl(self, ctx: commands.Context) -> None:
         self._start_kl(ctx.channel)
 
     @commands.command()
-    async def stop_kl(self, ctx):
-        await ctx.message.delete()
+    async def stop_kl(self, ctx: commands.Context) -> None:
         self._stop_kl()
 
-    def _start_kl(self, channel):
+    def _start_kl(self, channel: discord.TextChannel) -> None:
         if self.kl_task or self.is_kl:
             self._stop_kl()
         self.is_kl = True
         self.kl_channel = channel
         self.kl_task = asyncio.create_task(self._auto_kl_loop())
     
-    def _stop_kl(self):
+    def _stop_kl(self) -> None:
         self.is_kl = False
         if self.kl_task and not self.kl_task.done():
             self.kl_task.cancel()
             self.kl_task = None
     
-    async def _auto_kl_loop(self):
+    async def _auto_kl_loop(self) -> None:
         while self.is_kl:
             now = time.monotonic()
             if now >= self.next_kl and self.kl_channel:
                 try:
                     await self.kl_channel.send("$kl 12000")
-                    self.next_kl = now + random.uniform(delay_min, delay_max)
+                    self.next_kl = now + random.uniform(self.bot.config.auto_kl.delay_min, self.bot.config.auto_kl.delay_max)
                 except asyncio.exceptions.CancelledError as exc:
                     raise exc
                 except Exception as exc:
@@ -70,16 +60,32 @@ class auto_kl(commands.Cog):
             await asyncio.sleep(1)
 
     @commands.Cog.listener()
+    async def on_ready(self):
+        if (
+            self.bot.config.auto_kl.auto_start.enabled
+            and self.bot.config.auto_kl.auto_start.channel_id
+            and (not self.kl_task or not self.kl_task.done())
+        ):
+            self._start_kl(self.bot.get_channel(self.bot.config.auto_kl.auto_start.channel_id))
+        elif (
+            self.bot.config.auto_kl.persistent
+            and self.is_kl
+            and self.kl_channel
+            and self.kl_task.done()
+        ):
+            self._start_kl(self.kl_channel)
+
+    @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
-        if (not self.is_kl) or (self.kl_channel.id != message.channel.id) or (self.bot.mudae_id != message.author.id): return
+        if (not self.is_kl) or (self.kl_channel.id != message.channel.id) or (self.bot.config.mudae_id != message.author.id): return
 
         content = message.content.lower()
 
-        if any(word in content for word in KL_CONFIRM):
-            await self.kl_channel.send("y")
+        if any(word in content for word in self.bot.config.auto_kl.kl_confirm):
+            await self.kl_channel.send(random.choice(["y", "Y", "Yes", "yes"]))
             return
 
-        if any(word in content for word in MANY_PINS):
+        if any(word in content for word in self.bot.config.auto_kl.many_pins):
             for _ in range(2):
                 await self.kl_channel.send("$arlp")
                 await asyncio.sleep(random.uniform(1.5, 2.5))
@@ -87,15 +93,15 @@ class auto_kl(commands.Cog):
             for _ in range(2):
                 await self.kl_channel.send("$kl 12000")
                 await asyncio.sleep(random.uniform(1.0, 1.5))
-            self.next_kl = time.monotonic() + random.uniform(delay_min, delay_max)
+            self.next_kl = time.monotonic() + random.uniform(self.bot.config.auto_kl.delay_min, self.bot.config.auto_kl.delay_max)
             return
 
-        if any(word in content for word in NO_KAKERA):
+        if any(word in content for word in self.bot.config.auto_kl.no_kakera):
             await self.kl_channel.send(f"$givescrap {self.bot.user.mention} 5000000000")
             return
 
-        if any(word in content for word in GIVESCRAP_CONFIRM) and self.bot.user.name.lower() in content:
-            await self.kl_channel.send("y")
+        if any(word in content for word in self.bot.config.auto_kl.givescrap_confirm) and self.bot.user.name.lower() in content:
+            await self.kl_channel.send(random.choice(["y", "Y", "Yes", "yes"]))
             return
 
     @commands.Cog.listener()
@@ -105,7 +111,7 @@ class auto_kl(commands.Cog):
         if user.id == self.bot.mudae_id and str(reaction.emoji) == "🛑":
             await asyncio.sleep(1.0)
             await self.kl_channel.send("$kl 12000")
-            self.next_kl = time.monotonic() + random.uniform(delay_min, delay_max)
+            self.next_kl = time.monotonic() + random.uniform(self.bot.config.auto_kl.delay_min, self.bot.config.auto_kl.delay_max)
 
 async def setup(bot):
-    await bot.add_cog(auto_kl(bot))
+    await bot.add_cog(AutoKL(bot))
