@@ -4,6 +4,10 @@ token = ""
 # mudae bot id (this usually will not need any changes)
 mudae_id = 432610292342587392
 
+# app commands channel id (to automatically fetch slash commands)
+# not needed for slash command use, it just makes it faster the first time
+app_commands_channel_id = 0
+
 [auto_roll]
 # cogs/auto_roll.py
 

@@ -47,7 +47,6 @@ class MyBot(commands.Bot):
             afk=True, # this is so notifications actually work properly when the bot is running
             chunk_guilds_at_startup=False, # don't need member info
         )
-        #self.app_commands_channel_id = 1138234663668822076 # channel that has mudae commands (for using slash commands)
         self.slash_commands: list[discord.SlashCommand] = []
         self.config = config
     
@@ -70,7 +69,7 @@ class MyBot(commands.Bot):
     async def on_ready(self):
         logger.info(f"""Logged in successfully! User: {self.user.name}""")
         
-        if self.app_commands_channel_id:
+        if self.config.app_commands_channel_id:
             app_commands_channel = self.get_channel(self.app_commands_channel_id)
             apps = await app_commands_channel.application_commands()
             self.slash_commands = [cmd for cmd in apps if isinstance(cmd, discord.SlashCommand)]
