@@ -1,4 +1,9 @@
-# discord token (reads from environment variable TOKEN if unavailable)
+# Configuration file
+#
+# If this is missing, default configs (the ones you see here) will be used.
+# Same case for if a key or table is missing.
+
+# discord token (reads from command line arguments or environment variable TOKEN if unavailable)
 token = "" 
 
 # mudae bot id (this usually will not need any changes)
