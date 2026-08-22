@@ -21,6 +21,9 @@ import asyncio
 import time
 import random
 import re
+import logging
+
+logger = logging.getLogger(__name__)
 
 class AutoRoll(commands.Cog):
     def __init__(self, bot):
@@ -98,7 +101,10 @@ class AutoRoll(commands.Cog):
         click_queue = self._check_message_components(message, self.bot.config.auto_roll.auto_click_buttons)
         if click_queue:
             for button in click_queue:
-                await button.click()
+                try:
+                    await button.click()
+                except Exception as e:
+                    logger.debug(f"Button click {button.emoji.name} failed, ignoring exception.")
                 await asyncio.sleep(2)
 
 async def setup(bot):
