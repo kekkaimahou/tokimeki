@@ -27,12 +27,10 @@ class AutoKL(commands.Cog):
 
     @commands.command()
     async def start_kl(self, ctx: commands.Context) -> None:
-        await ctx.message.delete()
         self._start_kl(ctx.channel)
 
     @commands.command()
     async def stop_kl(self, ctx: commands.Context) -> None:
-        await ctx.message.delete()
         self._stop_kl()
 
     def _start_kl(self, channel: discord.TextChannel) -> None:

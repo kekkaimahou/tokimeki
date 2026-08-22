@@ -25,13 +25,11 @@ class Capture(commands.Cog):
     
     @commands.command()
     async def start_capture(self, ctx: commands.Context):
-        await ctx.message.delete()
         self.is_capturing = True
         self.capture_channel = ctx.channel
     
     @commands.command()
     async def stop_capture(self, ctx: commands.Context):
-        await ctx.message.delete()
         self.is_capturing = False
         self.capture_channel = None
         if self.capture_content:

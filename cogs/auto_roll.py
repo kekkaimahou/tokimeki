@@ -33,7 +33,6 @@ class AutoRoll(commands.Cog):
 
     @commands.command()
     async def start_roll(self, ctx: commands.Context, roulette: str = "") -> None:
-        await ctx.message.delete()
         if roulette:
             current_roulette = roulette
         else:
@@ -55,7 +54,6 @@ class AutoRoll(commands.Cog):
 
     @commands.command()
     async def stop_roll(self, ctx: commands.Context) -> None:
-        await ctx.message.delete()
         self._stop_roll()
 
     def _start_roll(self, channel: discord.TextChannel) -> None:
