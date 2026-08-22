@@ -16,7 +16,7 @@ from discord.ext import commands
 import asyncio
 import io
 
-class capture(commands.Cog):
+class Capture(commands.Cog):
     def __init__(self, bot):
         self.is_capturing: bool = False
         self.capture_channel: discord.Message.channel | None = None
@@ -24,13 +24,13 @@ class capture(commands.Cog):
         self.bot = bot
     
     @commands.command()
-    async def start_capture(self, ctx):
+    async def start_capture(self, ctx: commands.Context):
         await ctx.message.delete()
         self.is_capturing = True
         self.capture_channel = ctx.channel
     
     @commands.command()
-    async def stop_capture(self, ctx):
+    async def stop_capture(self, ctx: commands.Context):
         await ctx.message.delete()
         self.is_capturing = False
         self.capture_channel = None
@@ -40,7 +40,7 @@ class capture(commands.Cog):
             self.capture_content = ""
     
     @commands.Cog.listener()
-    async def on_message(self, message):
+    async def on_message(self, message: discord.Message):
         if not self.is_capturing: return
         if message.channel.id != self.capture_channel.id: return
         if message.author.id == self.bot.user.id: return
@@ -48,4 +48,4 @@ class capture(commands.Cog):
 
     
 async def setup(bot):
-    await bot.add_cog(capture(bot))
+    await bot.add_cog(Capture(bot))
