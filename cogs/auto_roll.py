@@ -55,7 +55,7 @@ class AutoRoll(commands.Cog):
             case "/":
                 try:
                     if not self.bot.slash_commands:
-                        await self.bot.update_cmds(ctx.channel)
+                        await self.bot.update_cmds(channel)
                     self.roulette = [cmd for cmd in self.bot.slash_commands if cmd.name == roulette.replace("/", "")][0]
                 except IndexError:
                     self.roulette = "$wa"

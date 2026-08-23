@@ -108,7 +108,7 @@ class AutoKL(commands.Cog):
     async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
         if (not self.is_kl) or (reaction.message.channel.id != self.kl_channel.id): return
 
-        if user.id == self.bot.mudae_id and str(reaction.emoji) == "🛑":
+        if user.id == self.bot.config.mudae_id and str(reaction.emoji) == "🛑":
             await asyncio.sleep(1.0)
             await self.kl_channel.send("$kl 12000")
             self.next_kl = time.monotonic() + random.uniform(self.bot.config.auto_kl.delay_min, self.bot.config.auto_kl.delay_max)
