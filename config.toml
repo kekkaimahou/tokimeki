@@ -52,7 +52,7 @@ persistent = true
 kl_confirm = ["spend", "gastar"]
 many_pins = ["too many badges", "muchas insignias"]
 no_kakera = ["you need", "not enough kakera", "no tienes suficiente kakera", "te faltan"]
-givescrap_confirm = ["are you sure you want to give", "realmente quieres dar"]
+givescrap_confirm = ["want to give", "realmente quieres dar"]
 
 # delay (in seconds) between each usage of the command
 delay_min = 20.0

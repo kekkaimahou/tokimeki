@@ -66,7 +66,7 @@ default_config = OmegaConf.create(
                 "te faltan"
             ],
             "givescrap_confirm": [
-                "are you sure you want to give",
+                "want to give",
                 "realmente quieres dar"
             ],
             "delay_min": 20.0,
