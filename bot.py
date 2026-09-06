@@ -92,6 +92,7 @@ class MyBot(commands.Bot):
             self_bot=True, # (other users can't use your commands)
             afk=True, # this is so notifications actually work properly when the bot is running
             chunk_guilds_at_startup=False, # don't need member info
+            member_cache_flags=discord.MemberCacheFlags.none(),
         )
         self.slash_commands: list[discord.SlashCommand] = []
         self.config = config
