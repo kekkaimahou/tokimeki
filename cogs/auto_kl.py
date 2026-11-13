@@ -6,8 +6,9 @@ Selfbot - Auto KL
 =============================
 
 Commands:
-start_kl
-stop_kl
+start_kl [channel]
+stop_kl [channel]
+list_kl
 
 =============================
 '''
