@@ -95,6 +95,7 @@ class MyBot(commands.Bot):
             member_cache_flags=discord.MemberCacheFlags.none(),
         )
         self.slash_commands: list[discord.SlashCommand] = []
+        self.mudae_commands: list[discord.SlashCommand] = []
         self.config = config
     
     async def on_command(self, ctx):
@@ -103,7 +104,17 @@ class MyBot(commands.Bot):
     async def update_cmds(self, channel: discord.TextChannel):
         apps = await channel.application_commands()
         self.slash_commands = [cmd for cmd in apps if isinstance(cmd, discord.SlashCommand)]
+        self.mudae_commands = [cmd for cmd in self.slash_commands if cmd.application_id == self.config.mudae_id]
 
+    @staticmethod
+    def find_cmd(command_list: list[discord.SlashCommand], *name_chain: list[str]) -> None:
+        for command in command_list:
+            if command.name != name_chain[0]: continue
+            if command.children and name_chain:
+                return MyBot.find_cmd(command.children, *name_chain[1:])
+            else:
+                return command
+                
     async def setup_hook(self):
         for cog in cogs:
             await self.load_extension(cog)
@@ -118,8 +129,7 @@ class MyBot(commands.Bot):
         
         if self.config.app_commands_channel_id:
             app_commands_channel = self.get_channel(self.app_commands_channel_id)
-            apps = await app_commands_channel.application_commands()
-            self.slash_commands = [cmd for cmd in apps if isinstance(cmd, discord.SlashCommand)]
+            self.update_cmds(app_commands_channel)
 
 
 async def main():
