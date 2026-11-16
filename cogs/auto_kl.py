@@ -6,8 +6,9 @@ Selfbot - Auto KL
 =============================
 
 Commands:
-start_kl [channel]
-stop_kl [channel]
+start_kl (slash) [channel]
+stop_kl (slash) [channel]
+stop_all_kl
 list_kl
 
 =============================
@@ -18,16 +19,38 @@ import asyncio
 import time
 import random
 import typing
+from enum import Enum
+from collections.abc import Callable
+
+class CommandType(Enum):
+    KL = "KL"
+    ARLP = "ARLP"
+    GIVESCRAP = "GIVESCRAP"
+    
 
 # the KL instance
 class KLSession:
-    def __init__(self, bot, /, channel, persistent=False, start=False):
+    def __init__(
+        self, 
+        bot, 
+        /, 
+        channel, 
+        command="$kl 12000",
+        arlp="$arlp",
+        givescrap="$givescrap",
+        persistent=False,
+        start=False
+    ):
         self.is_kl: bool = False
         self.kl_channel: discord.abc.Messageable = channel
         self.next_kl: float = time.monotonic()
         self.kl_task: asyncio.Task | None = None
         self.bot = bot
         self.persistent: bool = persistent
+        self.command: str | discord.Interaction | None = command
+        self.arlp: str | discord.Interaction | None = arlp
+        self.givescrap: str | discord.Interaction | None = givescrap
+        self.using_text_cmds: bool = isinstance(command, str)
         
         if start:
             self._start_kl()
@@ -49,14 +72,41 @@ class KLSession:
             now = time.monotonic()
             if now >= self.next_kl and self.kl_channel:
                 try:
-                    await self.kl_channel.send("$kl 12000")
+                    await self._send_command(CommandType.KL)
                     self.next_kl = now + random.uniform(self.bot.config.auto_kl.delay_min, self.bot.config.auto_kl.delay_max)
                 except asyncio.exceptions.CancelledError as exc:
-                    raise exc
+                    raise
                 except Exception as exc:
                     pass
             await asyncio.sleep(1)
 
+    async def _send_command(self, command_type):
+        match command_type:
+            case CommandType.KL:
+                if isinstance(self.command, str):
+                    await self.kl_channel.send(self.command)
+                elif isinstance(self.command, Callable):
+                    await self.command(self.kl_channel, input="12000")
+                else:
+                    return
+            case CommandType.ARLP:
+                if isinstance(self.arlp, str):
+                    await self.kl_channel.send(self.arlp)
+                elif isinstance(self.arlp, Callable):
+                    await self.arlp(self.kl_channel)
+                else:
+                    return
+            case CommandType.GIVESCRAP:
+                if isinstance(self.givescrap, str):
+                    await self.kl_channel.send(self.givescrap + " {self.bot.user.mention} 5000000000")
+                elif isinstance(self.givescrap, Callable):
+                    await self.givescrap(self.kl_channel, input=f"{self.bot.user.mention} 5000000000")
+                else:
+                    return
+
+    async def _send_yes(self):
+        await self.kl_channel.send(random.choice(["y", "Y", "Yes", "yes"]))
+   
     def destroy(self):
         self._stop_kl()
 
@@ -74,34 +124,33 @@ class KLSession:
         content = message.content.lower()
 
         if any(word in content for word in self.bot.config.auto_kl.kl_confirm):
-            await self.kl_channel.send(random.choice(["y", "Y", "Yes", "yes"]))
+            await self._send_yes()
             return
 
         if any(word in content for word in self.bot.config.auto_kl.many_pins):
-            for _ in range(2):
-                await self.kl_channel.send("$arlp")
-                await asyncio.sleep(random.uniform(1.5, 2.5))
-            await asyncio.sleep(random.uniform(1.0, 2.0))
-            for _ in range(2):
-                await self.kl_channel.send("$kl 12000")
-                await asyncio.sleep(random.uniform(1.0, 1.5))
+            await self._send_command(CommandType.ARLP)
             self.next_kl = time.monotonic() + random.uniform(self.bot.config.auto_kl.delay_min, self.bot.config.auto_kl.delay_max)
             return
 
         if any(word in content for word in self.bot.config.auto_kl.no_kakera):
-            await self.kl_channel.send(f"$givescrap {self.bot.user.mention} 5000000000")
+            await self._send_command(CommandType.GIVESCRAP)
             return
 
         if any(word in content for word in self.bot.config.auto_kl.givescrap_confirm) and self.bot.user.name.lower() in content:
-            await self.kl_channel.send(random.choice(["y", "Y", "Yes", "yes"]))
+            await self._send_yes()
             return
+        
+        if content == "`🛑`" and not self.using_text_cmds:
+            await asyncio.sleep(2.5)
+            await self._send_command(CommandType.KL)
+            self.next_kl = time.monotonic() + random.uniform(self.bot.config.auto_kl.delay_min, self.bot.config.auto_kl.delay_max)
 
     async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
         if (not self.is_kl) or (reaction.message.channel.id != self.kl_channel.id): return
 
         if user.id == self.bot.config.mudae_id and str(reaction.emoji) == "🛑":
-            await asyncio.sleep(1.0)
-            await self.kl_channel.send("$kl 12000")
+            await asyncio.sleep(2.5)
+            await self._send_command(CommandType.KL)
             self.next_kl = time.monotonic() + random.uniform(self.bot.config.auto_kl.delay_min, self.bot.config.auto_kl.delay_max)
 
 # manager for KL instances
@@ -144,14 +193,29 @@ class AutoKL(commands.Cog):
         await self.kl_sessions[reaction.message.channel.id].on_reaction_add(reaction, user)
 
     @commands.command()
-    async def start_kl(self, ctx: commands.Context, channel: typing.Union[discord.TextChannel, discord.Thread] = None):
+    async def start_kl(
+        self,
+        ctx: commands.Context,
+        use_slash: typing.Optional[typing.Literal["slash"]] = False,
+        channel: typing.Optional[typing.Union[discord.TextChannel, discord.Thread]] = None,
+    ):
         target: discord.abc.Messageable = channel if channel is not None else ctx.channel
-        self.kl_sessions[target.id] = KLSession(
-            self.bot,
-            channel=target,
-            start=True
-        )
-        
+        if not use_slash:
+            self.kl_sessions[target.id] = KLSession(
+                self.bot,
+                channel=target,
+                start=True
+            )
+        else:
+            if not self.bot.mudae_commands: await self.bot.update_cmds(ctx.channel)
+            self.kl_sessions[target.id] = KLSession(
+                self.bot,
+                channel=target,
+                start=True,
+                command=self.bot.find_cmd(self.bot.mudae_commands, "kakeraloots", "get"),
+                arlp=self.bot.find_cmd(self.bot.mudae_commands, "mudapins", "autoreleasepin"),
+                givescrap=self.bot.find_cmd(self.bot.mudae_commands, "modbalance", "givescrap"),
+            )
         await ctx.message.add_reaction("✅")
 
     @commands.command()
@@ -159,6 +223,7 @@ class AutoKL(commands.Cog):
         target: discord.abc.Messageable = channel if channel is not None else ctx.channel
 
         try:
+            self.kl_sessions[target.id].destroy()
             del self.kl_sessions[target.id]
         except:
             await ctx.reply("Channel does not have an active KL session.")
@@ -167,9 +232,17 @@ class AutoKL(commands.Cog):
         await ctx.message.add_reaction("✅")
     
     @commands.command()
+    async def stop_all_kl(self, ctx):
+        for session in self.kl_sessions.keys():
+            self.kl_sessions[session].destroy()
+            del self.kl_sessions[session]
+        
+        await ctx.message.add_reaction("✅")
+    
+    @commands.command()
     async def list_kl(self, ctx: commands.Context):
         output = [
-            f"<#{session.kl_channel.id}> | ID: {session.kl_channel.id}"
+            f"<#{session.kl_channel.id}> | ID: {session.kl_channel.id}{' | Slash' if not session.using_text_cmds else ''}"
             for session in self.kl_sessions.values()
         ]
         await ctx.reply("\n".join(output))
